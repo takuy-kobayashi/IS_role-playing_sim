@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IS Roleplay Case Simulator - Apple Design Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&family=SF+Pro+Text:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-main: #1d1d1f;
+            --text-sub: #86868b;
+            --accent-blue: #0071e3;
+            --accent-green: #34c759;
+            --border-color: rgba(0,0,0,0.08);
+            --shadow-sm: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 100px;
+        }
+
+        /* Apple Navigation Bar */
+        header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            height: 48px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+
+        .nav-logo {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        /* Hero / Main Area */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 96px 24px 24px 24px;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .hero-section h1 {
+            font-size: 40px;
+            font-weight: 600;
+            letter-spacing: -0.015em;
+            margin-bottom: 12px;
+        }
+
+        .hero-section p {
+            color: var(--text-sub);
+            font-size: 17px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Card Grid Layout */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+            transition: all 0.4s ease;
+        }
+
+        .grid-container.blur-bg {
+            filter: blur(8px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .case-card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .case-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .case-id {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-sub);
+            background: #f2f2f7;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .difficulty {
+            color: #ff9500;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .case-target {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 8px;
+        }
+
+        .case-tone {
+            font-size: 13px;
+            font-style: italic;
+            color: #e54646;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .meta-tag {
+            display: inline-block;
+            font-size: 11px;
+            background: #f2f2f7;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-right: 6px;
+            margin-bottom: 12px;
+            color: #48484a;
+        }
+
+        .card-footer-info {
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-sub);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Modal View (Popup) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            background: rgba(0,0,0,0.15);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-window {
+            background: #ffffff;
+            width: 90%;
+            max-width: 680px;
+            max-height: 85vh;
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 36px;
+        }
+
+        .modal-overlay.active .modal-window {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: #f2f2f7;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: #e5e5ea;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-blue);
+            margin-top: 20px;
+            margin-bottom: 6px;
+            border-left: 2px solid var(--accent-blue);
+            padding-left: 8px;
+        }
+
+        .section-content {
+            font-size: 14px;
+            color: #3a3a3c;
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+        }
+
+        .highlight-box {
+            background: #f8f9fa;
+            border: 1px dashed #0071e3;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 14px;
+        }
+
+        .highlight-box .section-title {
+            color: var(--accent-green);
+            border-left-color: var(--accent-green);
+            margin-top: 0;
+        }
+
+        /* Filter Controls */
+        .filter-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 980px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--text-main);
+            color: #ffffff;
+            border-color: var(--text-main);
+        }
+
+        /* Large Random Button Centered Container */
+        .random-large-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-random-large {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 980px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 4px 14px rgba(0, 113, 227, 0.25);
+        }
+
+        .btn-random-large:hover {
+            opacity: 0.95;
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(0, 113, 227, 0.35);
+        }
+
+        .btn-random-large:active {
+            transform: scale(0.98);
+        }
+
+        /* Editor form and Action buttons styles */
+        .section-title-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-blue);
+            margin-top: 14px;
+            margin-bottom: 6px;
+            border-left: 2px solid var(--accent-blue);
+            padding-left: 8px;
+        }
+
+        .edit-input, .edit-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: #f5f5f7;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .edit-input:focus, .edit-textarea:focus {
+            background: #ffffff;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+        }
+
+        .edit-textarea {
+            resize: vertical;
+        }
+
+        .edit-field {
+            margin-bottom: 12px;
+        }
+
+        .highlight-box-edit {
+            background: #f8f9fa;
+            border: 1px dashed var(--accent-green);
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 14px;
+        }
+
+        .action-btn {
+            padding: 8px 18px;
+            border-radius: 980px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .primary-btn {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+        }
+
+        .primary-btn:hover {
+            opacity: 0.9;
+        }
+
+        .secondary-btn {
+            background-color: #f2f2f7;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .secondary-btn:hover {
+            background-color: #e5e5ea;
+        }
+
+        .edited-badge {
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--accent-green);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <div class="nav-logo">IS Training Simulator</div>
+            <button class="action-btn secondary-btn" style="padding: 4px 12px; font-size: 11px; font-weight: 500; border-radius: 6px;" onclick="resetAllCases()">全編集内容をリセット</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="hero-section">
+            <h1>IS実戦ロープレ・シミュレーター</h1>
+        </div>
+
+        <div class="random-large-wrapper">
+            <button class="btn-random-large" onclick="pickRandomCase()"> シナリオをランダム選出</button>
+        </div>
+
+        <div class="filter-wrapper">
+            <button class="filter-btn active" id="btn-all" onclick="filterDifficulty('all')">すべて</button>
+            <button class="filter-btn" id="btn-easy" onclick="filterDifficulty('easy')">★1〜2 (初級)</button>
+            <button class="filter-btn" id="btn-mid" onclick="filterDifficulty('mid')">★3〜4 (中級)</button>
+            <button class="filter-btn" id="btn-hard" onclick="filterDifficulty('hard')">★5 (上級)</button>
+        </div>
+
+        <div class="grid-container" id="gridContainer">
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal-window" onclick="event.stopPropagation()">
+            <button class="modal-close-btn" onclick="hideModal()">×</button>
+            
+            <!-- 閲覧モード表示用 -->
+            <div id="modalViewMode">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span class="case-id" id="modalCaseId">CASE 01</span>
+                    <span class="difficulty" id="modalDifficulty">★★★★★</span>
+                </div>
+                <h2 class="case-target" id="modalTarget">学年 / 属性</h2>
+                <div class="case-tone" id="modalTone">お電話口の第一声トーン</div>
+                
+                <div class="section-title">顧客ステータス / 他社接触</div>
+                <div class="section-content" id="modalStatus"></div>
+
+                <div class="section-title">顧客のスタンス（主導権の指示）</div>
+                <div class="section-content" id="modalControl"></div>
+
+                <div class="section-title">裏側に持っている本音（設定）</div>
+                <div class="section-content" id="modalHonneh"></div>
+
+                <div class="section-title">壁のトリガー（地雷）</div>
+                <div class="section-content" id="modalTrigger" style="color: #c93b3b; font-weight: 500;"></div>
+
+                <div class="highlight-box">
+                    <div class="section-title">攻略の鍵（青信号・決定版トーク）</div>
+                    <div class="section-content" id="modalKey"></div>
+                </div>
+
+                <!-- 編集・リセットアクションボタン -->
+                <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <button class="action-btn secondary-btn" id="btnResetCase" style="display:none;" onclick="resetSingleCase()">このケースを初期設定に戻す</button>
+                    <button class="action-btn primary-btn" onclick="enterEditMode()">✏️ 編集する</button>
+                </div>
+            </div>
+
+            <!-- 編集モードフォーム用 -->
+            <div id="modalEditMode" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span class="case-id" id="editCaseId">CASE 01</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:12px; color:var(--text-sub);">難易度:</span>
+                        <select id="editDifficulty" class="edit-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); font-size:13px; background: #fff; cursor: pointer;">
+                            <option value="1">★ (1)</option>
+                            <option value="2">★★ (2)</option>
+                            <option value="3">★★★ (3)</option>
+                            <option value="4">★★★★ (4)</option>
+                            <option value="5">★★★★★ (5)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="edit-field">
+                    <label class="section-title-label">学年 / 属性</label>
+                    <input type="text" id="editTarget" class="edit-input" />
+                </div>
+
+                <div class="edit-field">
+                    <label class="section-title-label">お電話口の第一声トーン</label>
+                    <input type="text" id="editTone" class="edit-input" />
+                </div>
+
+                <div class="edit-field">
+                    <label class="section-title-label">顧客ステータス / 他社接触</label>
+                    <textarea id="editStatus" class="edit-textarea" rows="2"></textarea>
+                </div>
+
+                <div class="edit-field">
+                    <label class="section-title-label">顧客のスタンス（主導権の指示）</label>
+                    <textarea id="editControl" class="edit-textarea" rows="2"></textarea>
+                </div>
+
+                <div class="edit-field">
+                    <label class="section-title-label">裏側に持っている本音（設定）</label>
+                    <textarea id="editHonneh" class="edit-textarea" rows="3"></textarea>
+                </div>
+
+                <div class="edit-field">
+                    <label class="section-title-label" style="color: #c93b3b; border-left-color: #c93b3b;">壁のトリガー（地雷）</label>
+                    <textarea id="editTrigger" class="edit-textarea" rows="2" style="border-color: rgba(229, 70, 70, 0.3); color: #c93b3b; background: rgba(229, 70, 70, 0.02);"></textarea>
+                </div>
+
+                <div class="edit-field highlight-box-edit">
+                    <label class="section-title-label" style="color: var(--accent-green); border-left-color: var(--accent-green); margin-top: 0;">攻略の鍵（青信号・決定版トーク）</label>
+                    <textarea id="editKey" class="edit-textarea" rows="3" style="border-color: rgba(52, 199, 89, 0.3); background: #ffffff;"></textarea>
+                </div>
+
+                <div class="edit-actions" style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <button class="action-btn secondary-btn" onclick="exitEditMode()">キャンセル</button>
+                    <button class="action-btn primary-btn" onclick="saveCaseChanges()">変更を保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultCases = [
+            {
+                id: "01",
+                grade: "小4 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、はい。資料届きました。えっとね、ちょっと聞きたいんだけど…（早口、前のめり）」",
+                status: "【情報過多・マシンガントーク型】\nネットやSNSの記事、他社のパンフレットを読み漁っている状態。",
+                control: "【顧客が主導権を握り気味】自分の調べた知識を捲し立ててこちらにYES/NOを迫ろうとする。呑まれずに一度引き取るスタンスが必要。",
+                honneh: "周りの友達が塾に通い始め、親として「うちも中学受験を考えたほうがいいのか」と焦り始めている。しかし、情報が多すぎて私立・国立・公立一貫校のどれが我が子に合うのか、そもそも受験に向いているのかが分からず思考停止している。",
+                trigger: "プレイヤーが「まずは現在の学力は？」など、現実の数字を詰めようとすると、防衛モードに入り「あ、じゃあまた自分で調べてからにしますね」と濁して電話を切ろうとする。",
+                key: "マシンガントークを一度受け止め、「皆様、最初はまずは情報収集ですよね〜！」と同調する。\n「実は、最初から受験校を決めている方よりも、まずはどんな選択肢があるのかフラットに情報を集めに来られる方がほとんどなんですよ」とハードルを下げて安心させる。"
+            },
+            {
+                id: "02",
+                grade: "小5 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「あ、はい…届いてます…（ため息混じり、疲弊している、声が低い）」",
+                status: "【状況を完璧に把握・精神的限界型】\n現在大手の集団塾（中学受験コース）に在籍中。限界を感じて他を探し始めた一発目。",
+                control: "【顧客が主導権を放棄しつつ拒絶】かなり疲弊しており、会話のラリーすら拒もうとする。こちらから包み込むような主導権の引き戻しが必要。",
+                honneh: "小4から大手の集団塾に通っているがクラスが一番下から上がらず、最近は塾の宿題をこなすだけで精一杯。子どもが「塾に行きたくない、お腹痛い」と言い始めており、転塾か受験撤退かを真剣に悩んでいる。",
+                trigger: "プレイヤーが「体験授業でプロがお子さんのやる気を出します！」のような明るすぎる営業トーンでいくと、直接反論はしてこないが、心の中で（そういう問題じゃないのよ…）と感じて「あ、主人の意見も聞いてからまた検討しますね…」とフェードアウトする。",
+                key: "「お母様もそこまで見ていらっしゃるの、本当に頭が下がる思いです。今一番しんどい時期ですよね」と親の精神的疲弊に100%共感する。\nその上で「実は今の集団塾さんのペースがしんどくなって、一度お子様の負担を減らすための『見直し』としてご相談に来られる方が非常に多いんですよ」と安全な逃げ道を用意する。"
+            },
+            {
+                id: "03",
+                grade: "小6 / 公立",
+                difficulty: 1,
+                stars: "★☆☆☆☆",
+                tone: "「あ、もしもし〜。あぁ、資料のね。はいはい（低め、のんびり、他人事）」",
+                status: "【配偶者から聞いた・のんびり型】\n塾への問い合わせは今回が完全に初めて。右も左も分かっていない。",
+                control: "【主導権は完全にこちら】お父様が伝書鳩状態のため抵抗は薄いが、中身を何も知らないため、こちらから優しくナビゲートしてあげる必要がある。",
+                honneh: "中学受験はしない。小学校の単元テストは80〜100点くらいでそこそこ取れているが、カラーテストの裏面の応用問題や、算数の「割合」「文章題」で時々ポロポロ落とす。中学校に入ってから英語や数学で置いていかれないか心配とお母様が言っていたのをそのまま伝えている。",
+                trigger: "パパを置いてきぼりにして「お子さんの現在のテストの点数は細かく分かりますか？」と詰め寄ると、「あー、どうですかね、妻がそう言ってて詳しくはわからないんですけど〜、また聞いておきます」と濁されて終わる。",
+                key: "「お母様がそこまで心配されているんですね」と伝書鳩状態のお父様を肯定する。\n「お父様方からは『妻に一回聞いてこいって言われて〜』と仰って最初にご相談いただくケース、実はめちゃくちゃ多いんです」とマジョリティに巻き込み、お父様の記憶にある“妻の懸念”を優しく引き出す。"
+            },
+            {
+                id: "04",
+                grade: "小5 / 私立（一貫校）",
+                difficulty: 2,
+                stars: "★★☆☆☆",
+                tone: "「あ、はーい。資料届きましたよ〜。どうも〜（軽め、ハキハキしているがどこか他人事）」",
+                status: "【薄い・事なかれ主義型 / ※ガツガツ系ではない中堅私立設定】\nとりあえず学校の進度に合わせられそうな個別指導の資料を数社ポチっただけ。",
+                control: "【顧客は受け身】警戒心は薄いが、切迫感もない。おじけづかせない程度に「今が相談のタイミングである」というマジョリティ要素を入れる。",
+                honneh: "私立の小学校に通っており、そのまま併設の中学校へ上がる予定。しかし、直近の学内テストでガクッと順位が落ち、先生から「このままだと内部進学の推薦基準に届かない可能性がある」と面談でチクリと言われてしまった。",
+                trigger: "プレイヤーが「私立はハイスピードですから、今のうちから死ぬ気でやらないと！」と過剰に焦らせると、おじけづいて「あ、うちはそこまでガツガツやる学校じゃないんで、今回は大丈夫です〜」と引かれてしまう。",
+                key: "「内部進学があるとはいえ、学校の先生から直接言われるとちょっと焦っちゃいますよね」と共感する。\n「同じように『ガツガツやるわけじゃないけど、学校の基準だけはキープしたい』と、ピンポイントで対策の相談に来られる私立の親御様、実はすごく多いんですよ」と伝えて警戒を解く。"
+            },
+            {
+                id: "05",
+                grade: "小4 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「もしもし、あ、資料ね。一応届いてるけど、まだちょっと早いと思ってるのよね（少し警戒、バリア）」",
+                status: "【自己完結・決めつけ型】\n通信教育のサイトなども並行して見ている。今すぐ入塾する気はない。",
+                control: "【顧客が主導権を固守】「まだ早い」という自分の判断を絶対に崩したくないスタンス。その判断を否定せず、ハードルを徹底的に下げるアプローチが必要。",
+                honneh: "現状、学校のテストで困っているわけではないが、高学年になるにつれて勉強が難しくなるという噂を聞き、念のためどんな選択肢があるのか見ておこうと思った。家で通信教育をやるか、塾に行くべきか、そもそもまだ何もしなくていいのか迷っている。",
+                trigger: "「4年生からの塾通いは常識ですよ！後からだと大変です！」的な、未来の恐怖訴求や相手の判断を否定するアプローチをすると、「あ、じゃあ必要になったらまた考えます」と即シャットアウトされる。",
+                key: "「そうですよね、今困っていないなら早いと思います！」と一度100%同意する。\n「実は塾に来られる方って、今すでに困って入る人より、困っていないけれど将来のためにということで『まずは情報収集だけ』と見に来られる方がマジョリティなんですよ」と第三者話法で伝える。「すぐに決めるというわけにもいきませんので、まずは低めのハードルで選択肢を比めるための相談ができるようになっていますよ」と促す。"
+            },
+            {
+                id: "06",
+                grade: "中1 / 公立",
+                difficulty: 2,
+                stars: "★★☆☆☆",
+                tone: "「あ、はい。届いてますけど。（ぶっきらぼう、一問一答モード全開）」",
+                status: "【薄い・超一問一答型】\n子供の点数が悪かったので、イライラして適当にネットで見つけたところに資料請求しただけ。",
+                control: "【顧客は完全防御・非協力】しゃべりたくないオーラ全開。プレイヤー自身に細かい単元知識がなくても対応できる「大枠の言い回し」で親の口を開かせる。",
+                honneh: "最初の1学期中間テストは小学校の貯蓄で高得点が取れたが、期末、2学期と進むにつれて右肩下がりに。直近のテストでついに平均点を下回ったが、親も専門的なつまずき理由はわかっていない。",
+                trigger: "「点数は何点ですか？」「どこが苦手そうですか？」と、専門用語（三人称や方程式など）を交えて尋問のように詰めると、答えられずに「いや、見てないんで分かんないです。資料見ますね」と切られる。",
+                key: "「中1のこの時期って、小学校の貯金が切れて急に難しくなるので、点数が右肩下がりになっちゃうお子様がすごく多い時期なんですよね」と一般論を話す。\n英文に、「例えば英語や数学の、なにか特定の計算とか、文法のルールとかで急につまずく子が多いんですが、まさにその辺りでお困りですか？」と、誰でもわかる大枠の表現で親の共感を引き出す。"
+            },
+            {
+                id: "07",
+                grade: "中2 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「もしもし、あ、はーい。資料請求した件ね。うちは本当に時間がないんだけど…（少しトゲがある、挑戦的）」",
+                status: "【状況把握・子供に甘め型】\n近くの集団塾は時間が合わないため、個別指導や家庭教師、オンラインを検討中。",
+                control: "【顧客が時間なさを理由に主導権を握る】「時間がないから無理でしょ？」と突きつけてくるスタンス。ソリューション提案に走らず、マジョリティの動きへ巻き込む。",
+                honneh: "運動部のレギュラーで、毎日クタクタになって帰ってくる。平日は宿題をやるのが精一杯で、週末も遠征や練習試合。本人は「部活を絶対に辞めたくない、塾に行く時間なんてない」と言い張っており、親も無理強いはさせたくない。",
+                trigger: "「いくら部活が忙しくても、効率的な時間の使い方の提案なんですが…」などといきなりこちらのソリューション提案に走ると、「だからその時間がないって言ってるじゃないですか。検討しますね」とバリアを張られる。",
+                key: "時間がないことへの共感を最優先にし、「そこまで部活を一生懸命頑張られているの、本当に素敵ですね！」と肯定する。\nその上で「実は、〇〇様と同じように『部活が忙しくて本当に時間がないんです』というご家庭は、基本的に皆様こうされていますよ〜」とマジョリティの動きとして面談へ案内する。「すぐに決めるっていうわけにもいきいませんので、他社様の比較も含めて、一度『これなら両立できそうか』の軽めの相談ができるようになっています（色々見比べる必要がなくなるかも、と思わせる）」と伝える。"
+            },
+            {
+                id: "08",
+                grade: "中2 / 私立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、はいはい、届いてます〜。よく分かんないんだけどね〜（他人事、丸投げ、お気楽）」",
+                status: "【薄い・丸投げ型】\n「私立・赤点」などのキーワードでヒットした個別指導数社に一斉に資料請求。",
+                control: "【顧客は丸投げ・聞く耳を持たない】一見話しやすそうだが、中身の会話からは逃げようとする。第三者話法を用いて私立あるあるへ巻き込む主権設計が必要。",
+                honneh: "中高一貫の私立校。進度が非常に早く、赤点（追試）の常連になってしまい、学校の補習だけでは追いつけなくなっている。学校の教科書も特殊で、市販の参考書が合わない。",
+                trigger: "専門用語や学校の細かい対策をこちらから詰め寄ると、「あ、私よくわからないので〜資料見て考えておきます〜」と逃げられる。",
+                key: "第三者話法を徹底する。「『私立に入れたら学校が全部やってくれると思いますよね！まさか中2でこんなに進むなんてびっくりしちゃいますよね』という方が本当に多いんですよ〜」と伝える。\nさらに、「同じような状況の方は、まずその辺の事情（私立特有の進度や教科書）が普通の学校（公立）とは全く違うからこそ、まずは相談してもらっているんです」とマジョリティ要素を交えながら、相談の場へ誘導する。"
+            },
+            {
+                id: "09",
+                grade: "中3 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「あ、はい…（低く、トゲがある）。家でゲームばっかりしてて本当にイライラするんですけど、今からでも間に合うんですかね？（愚痴っぽい）」",
+                status: "【状況把握・イライラ諦め型】\n崖っぷちなので、とにかく子供のケツを叩いてくれる塾を必死に探しているが半ば諦めモード。",
+                control: "【顧客の感情主導】イライラと不安が混ざり、こちらの出方を伺っている。性別ヒアリングなど「あるあるトーク」で主導権をこちらのペースに引き込む。",
+                honneh: "志望する公立高校があるが、内申点が低く、学校から「当日試験で満点近く取らないと厳しい」と言われた。本人は行きたいと言っているが、家での行動（スマホ・ゲーム量）が変わらず親のストレスが頂点に達している。",
+                trigger: "「内申点は変えられないので志望校変更も視野に…」などと現実を突きつけすぎると、「やっぱり無理ですよね。もういいです」と諦めて電話を切られる。",
+                key: "「毎日その姿を見ていたらイライラしちゃうの当然ですよ」と共感しつつ、「ちなみに、お子様は男の子ですか？女の子ですか？」と性別をヒアリングする。「あ、男子（女子）なんですね。男子（女子）だと、この時期は特に〇〇になりがちですよね〜！」と男女のあるあるを交えて共感を深める。\nその上で、クロージング前やヒアリング時に「一先ず塾に入るというよりかは、まずは今の内申点から逆算して、当日あと何点必要なのか、何からやるべきなのかを明らかにしたいですよね。そこを知りたいですよね〜」と共感させて、学習相談に誘導する。"
+            },
+            {
+                id: "10",
+                grade: "中2 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、もしもし。資料は届いたので、とりあえず今回は見るだけで大丈夫ですので（先に釘を刺してくる、防衛トーン）」",
+                status: "【現状維持・防衛型】\n今すぐ入塾する気はない。完全なる「将来のための情報収集」。",
+                control: "【顧客が先制攻撃で主導権を握る】最初に「見るだけ」とシャットアウトを狙うスタンス。その防衛を軽くいなし、中3の受験期に向けたフラットな情報収集としてハードルを下げる。",
+                honneh: "定期テストの点数は平均点より少し上くらいをキープしている。本人は「塾に行かなくても自力でやれる」と言っており、親も無理に行かせる必要はないと考えている。ただ、中3の受験期になってから慌てるのも嫌なので、今のうちに情報だけ集めている。",
+                trigger: "「中3になってからじゃ遅いですよ！」と煽りや恐怖訴求を入れると、「いえ、本人が行く気ないので結構です」とさらにバリアを頑丈にされる。",
+                key: "「自力で平均以上キープできてるなんて、めちゃくちゃ優秀なお子さんですね！」と大肯定する。\n「実は、〇〇様と同じように、今すぐ塾へ入れるつもりは全くないけれど、中3になって周りがみんな行き出した時に焦らないために『情報の集め方』として、まずは相談に来られる方がほとんどなんですよ」とマジョリティの動きとして安心させ、面談へのハードルを下げる。"
+            },
+            {
+                id: "11",
+                grade: "高1 / 公立",
+                difficulty: 5,
+                stars: "★★★★★",
+                tone: "「もしもし、あ、資料請求の…はい。ちょっと本当に困ってて…（焦っている、パニック、声が上ずっている）」",
+                status: "【状況把握・困惑型 / ※プレイヤーの先走り厳禁設定】\n大手予備校や映像授業のパンフレットも手当たり次第に請求している。",
+                control: "【パニックによる依存、しかし先走ると急制動バリア】顧客は藁にもすがる思い。ただしプレイヤーが十分な共感をせず、すぐに体験日程などに誘導しようとすると、我に返って「夫に確認を…」と拒絶する。※プレイヤーが勝手に学習相談へ誘導しようとした場合は、顧客側（あなた）は「自分からすべてを聞きに行くスタンス（前のめり）」に急変させて対応力を試すこと。",
+                honneh: "中学時代はトップ層で、地域の進学校に進学。しかし、高校に入った途端に数学と古文で完全に挫折。プライドがあるため親には隠しているが、赤点寸前の成績表を見て親が青ざめて問い合わせた。",
+                trigger: "プレイヤーが親のパニックに巻き込まれるか、もしくは十分な共感をせずにすぐ「一度体験授業に来てください！」などとシステム案内へ先走ること。",
+                key: "親の焦りと、子供のプライド（SOSが出せない）に徹底的に共感する。\nプレイヤーが先走らずに、まずは親の「話を聞きに行きたい」というスタンスを優しく受け止めることで、自然に学習相談への強固な合意が形成される。"
+            },
+            {
+                id: "12",
+                grade: "高2 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「あ、もしもし。資料のね。はいはい。高2から通うと結局いくらくらいかかるのか、料金を知りたくて電話したんだけど…（金額以外は警戒）」",
+                status: "【シャットアウト・料金問い合わせ型】\n他社の予備校も含め、まずは料金の相場を知るために電話をかけている。",
+                control: "【顧客が料金の盾で主導権を完全コントロール】具体的な状況を話そうとせず、金額だけを要求する。金額への警戒を大共感で解き、最も安く済ませるための「無駄を削る作戦会議」の文脈へ引き込む。",
+                honneh: "学校の評定平均を上げて「指定校推薦」で大学に行きたい。現在の評定平均が「3.8」で、人気の枠を狙うには「4.2」以上必要。次の学年末テストで絶対に落とせないプレッシャーがあるが、予算も限られている。",
+                trigger: "「指定校を狙うなら、科目ごとの評定が〜」と大学受験の具体的な仕組みや子供の苦手科目などの話を振ると、「あ、そこまではよく分からないので。ひとまず料金だけ分かればいいです」とシャットアウトされる。",
+                key: "料金への警戒に共感し、「高2からの予備校代ってどれくらいかかるのか、まずは知りたいですよね！」と受け止める。「弊社は1:1の相場から大きく外れてはいないので、その点はご安心くださいね」と言い切って安心させる。\nその上で、「実は、指定校推薦の評定を上げるためには、全科目をダラダラ取るのではなく、次のテストの特定の科目だけに絞って『無駄を削ったやり方』をするのが一番費用を抑えるコツなんですよ。そのためにも、お母様も含めて一度軽めの作戦会議ができるようになっています」と誘導する。"
+            },
+            {
+                id: "13",
+                grade: "高2 / 私立",
+                difficulty: 5,
+                stars: "★★★★★",
+                tone: "「あ、もしもし。資料ありがとうございます。ちょっとお伺いしたいんですが、御社って総合型選抜の実績や対策ってどうなっていますか？（冷徹、ビジネスライク）」",
+                status: "【情報持っている・他社比較型】\n総合型選抜の専門塾や、他社のAO対策講座とすでにゴリゴリに比較・相談している。",
+                control: "【顧客が圧倒的な知識主導権を握る】ISの知識量をテストするようなビジネスライクなスタンス。その場で適当なファクトを言おうとせず、プロとして「教室に行くしかない必然性」を組み立てて主導権を奪い返す。",
+                honneh: "特技や課外活動実績があるため総合型選抜（旧AO入試）での受験を考えている。しかし学校の手厚いサポートが期待できないため、専門的な対策ができる場所を探している。",
+                trigger: "プレイヤーがその場で「一応、小論文の添削もやってますよ」という浅い回答や、根拠のない適当な実績アピールをすると、「あ、じゃあ資料を見て比較しますね」と即座に見切られる。",
+                key: "「かなり具体的に調べられていらっしゃるんですね。仰る通り、総合型は学校任せにできないのが現状です」と相手の知識をリスペクトする。\nその上で、ISの段階ではファクト（細かい実績データ）を持てない理由をプロとして説明する。「実は、総合型選抜と一言で言っても、大学や受験方式によって『口頭試問』『課題提出型』『GD』など対策が全く異なります。これらをある程度、教室の専門担当とお子様の状況ですり合わせ（目星を付け）しないことには、実績や対策の相性もお伝えできないのが正直なところなんです。ですので、まずは無駄な対策を削るためのすり合わせを一度教室でさせてもらっているんですが…」と、教室に行くべき強固な理由を作る。"
+            },
+            {
+                id: "14",
+                grade: "高3 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、はい。資料届きました〜。子供が塾行くって言い出したんで、とりあえず頼んだだけなんですけど（あっさり、子供に無関心）」",
+                status: "【薄い・とりあえず問い合わせ型】\n子供が自分で探してきた大手予備校などのパンフレットが家に転がっている状態。",
+                control: "【顧客は完全な当事者意識ゼロ】「本人に任せている」と一歩引いており、こちらの話に入ってこない。「本人に」と言い過ぎると保護者が離脱するため、保護者も巻き込む動線へ修正が必要。",
+                honneh: "高3の夏前まで部活を全力でやっており、模試の判定はいつもE判定。部活を引退したので「ここから死ぬ気でやる」と本人は言っているが、これまで定期テスト対策しかしてこなかったため、共通テストや一般入試の解き方が分からず立ち往生している。",
+                trigger: "「高3のこの時期からのE判定は大変で…」と親に熱弁しても、「あ、そういう細かいのは全部本人に任せてるんで、私に言われても困っちゃうな〜」とシャットアウトされる。",
+                key: "「お手数なのに、お子さんのためにすぐ動いてあげて優しいお母様ですね」と行動を褒め、「高3のお子さんだと、親御さんに心配かけたくなくて一人で抱え込んでパンクしちゃう子が本当に多いんです」と伝える。\n「ここから無駄を削ったやり方で、最短ルートで進めるためにも、お母様も含めて一度プロとの相談（作戦会議）が必要になってくるんですよ。まずは何から手を付けるべきかのルートを一緒にすり合わせましょうか？」と、無駄を削る文脈で保護者も相談へ巻き込む。"
+            },
+            {
+                id: "15",
+                grade: "高1 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「もしもし、あ、見積もりをお願いしたくて。高1から通うと結局いくらくらいかかるんですか？（金額以外の話は拒絶）」",
+                status: "【シャットアウト・見積もり要求型】\n料金の比較表を作ろうと、手当たり次第に問い合わせて料金だけを弾き出そうとしている。",
+                control: "【顧客が金額を盾に主導権を握る】余計なヒアリングは一切受け付けない防衛MAXスタンス。金額への不安を受け止め、「相場と大きく変わらない」と言い切った上で「無駄を削るための相談」へ引き込む。",
+                honneh: "大学には行ってほしいと思っているが、本人の志望大も決まっていないし、高校の勉強がどれくらい大変かもまだ見えていない。予備校代の費用感の相場や、いつから通い始めるのが一般的なのかを知りたい。",
+                trigger: "「お話を伺わないと料金が出せません」と頑なに拒むと、「じゃあいいです」とガチャ切りされる。",
+                key: "「高校生の予備校代ってどれくらいかかるのか、まずは知りたくなりますし、不安になりますよね！」と大共感する。\n「弊社の料金プランは、一般的な個別指導の相場とあまり大きくは変わらないのでその点はご安心くださいね」と先に言い切って安心させる。その上で、「ストレートに料金を抑えるコツというか、無駄を削ったやり方（必要な単元だけを絞るなど）をするためにも、まずは一度軽い相談が必要になるんですが…」と話を始め、中身の会話へと自然に引き込んでいく。"
+            },
+            {
+                id: "16",
+                grade: "小5 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、もしもし。資料届きました。まだ本人には塾のこと何も言ってないんですけど、ちょっと相談したくて…（小声、周りを気にしている）」",
+                status: "【本音未確認・外堀埋め型】\n周りの友達が塾に行き始めた噂を聞き、親の焦りが先行して資料請求。",
+                control: "【顧客は相談モード】\n親自身も「まだ早いかも」「勝手に決めて嫌がられたらどうしよう」と迷っている。否定せず、親の味方になってハードルを下げる。",
+                honneh: "学校のテストは普通に取れているが、高学年になって周りがザワつき始め、親として「このままでいいのか」と漠然とした焦りがある。ただ、子どもに「塾行く？」と聞いて拒絶されるのが怖く、内緒で調べている。",
+                trigger: "「小5の今からやらないと手遅れになりますよ！すぐにお子様を説得しましょう！」と急かすと、「やっぱり本人に聞いてからにします」とバリアを張られる。",
+                key: "「ありがとうございます。これってお子様が今何かで困っているというよりは、周りの環境の変化とかを見て、お母様のほうが『このままで大丈夫かな』と少し心配が出てきたタイミングでしょうか？」"
+            },
+            {
+                id: "17",
+                grade: "小6 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、はいはい、届いてます。もうね、家で全然勉強しなくなっちゃって困ってるのよ（サバサバしているが、呆れ気味）」",
+                status: "【環境変化・お手上げ型】\n他社の通信教材やタブレットも試したが、部屋の隅に放置されている状態。",
+                control: "【主導権は完全にこちら】\n家での勉強管理に限界を感じておりプロに丸投げしたい状態。具体的な管理方法の提示で引き込む。",
+                honneh: "4年生で学童を卒業してから、放課後の学習習慣が完全に消え去った。宿題は一瞬で終わらせてあとはYouTubeやゲームばかり。算数の「割合」や「分数」あたりから怪しく、1年分以上の遅れを感じている。",
+                trigger: "「毎日〇時間は机に向かわせるルールを作りましょう！」と家庭での負担を増やす提案をすると、「それができないから困ってるのよ…」と引かれてしまう。",
+                key: "「あ、そうですよね、家だとどうしても誘惑が多いですよね。これって、昔に比べて『宿題はやっているけれど、それ以外の学習習慣がなかなか作れなくて困っている』というような状態ですか？」"
+            },
+            {
+                id: "18",
+                grade: "小4 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「あ、はい、届いてます。今、大手の集団塾に行ってるんですけど、ちょっと個別も見てみたくて…（少し後ろめたさがある、慎重なトーン）」",
+                status: "【現塾不満・比較検討型】\n日能研や四谷大塚などの集団塾（中学受験コース）に在籍中。週2〜3回の通塾に疲弊。",
+                control: "【顧客がこちらの出方を伺っている】\n「個別は高い、甘い」という先入観もあるため、集団塾のシステムを理解した上での「無駄を削るフォロー」として主導権を握る。",
+                honneh: "中学受験のやる気はあるが、集団塾のテキストと宿題の量が多すぎて消化不良を起こしている。親が教えても感情的になってケンカになるため、現在の塾を続けながら週1〜2回、算数だけのピンポイントフォローを入れるべきか迷っている。",
+                trigger: "「今の集団塾はやめて、完全に個別にしたほうがいいですよ！」と全面切り替えを迫ると、「いや、今の塾のカリキュラムは気に入っているので…」と警戒される。",
+                key: "「集団塾さんと並行して考えられているんですね。今って『塾の宿題をこなすだけで精一杯で、解き直しや苦手な単元の穴埋めまで手が回っていない』という状況だったりしますか？」"
+            },
+            {
+                id: "19",
+                grade: "小5 / 公立",
+                difficulty: 2,
+                stars: "★★☆☆☆",
+                tone: "「あ、もしもし。資料届きました。英語をね、ちょっと見てもらいたくて（ハキハキ、教育熱心）」",
+                status: "【目的明確・初心者型】\n低学年から英会話スクールやネイティブの教室に通わせていたご家庭。",
+                control: "【顧客は受け身】\n英会話と「塾の英語（文法）」の違いがよく分かっていないため、そこを優しくナビゲートしてあげる。",
+                honneh: "リスニングや発音は良いが、読み書き（スペル）や文法のルールが全く身についていない。小学校の英語の授業が本格化する中で「あれ？意外と書けていないな」と気づき、中学入学前に英検5級・4級の対策を兼ねてしっかり文法を学ばせたい。",
+                trigger: "「これからは英語が話せないとダメですから、オンラインレッスンを〜」と会話重視 of の提案をすると、「会話はもうやってるんですけど…」とズレてしまう。",
+                key: "「英語ですね！これってお子様的には『耳で聞いたり喋ったりはできるけれど、いざ文字で書くとか、文法のルールになるとちょっと怪しいな』というようなタイミングでしょうか？」"
+            },
+            {
+                id: "20",
+                grade: "中2 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「あ、もしもし！今回のテストが本当に信じられないくらい悪くて、慌てて資料請求したんです！（焦燥感、怒りと不安が混ざっている）」",
+                status: "【突発的・現状把握できていない型】\nテスト返却当日にスマホで目についた塾へ片っ端から申し込んでいる。",
+                control: "【顧客の感情主導】\n親がパニックになっているが、原因分析はゼロ。一度「あ、そうですよね」と受け止め、冷静に現状を整理する文脈へ引き込む。",
+                honneh: "数学か英語でついに「一桁」や「赤点レベル」の点数を取ってきた。本本人は「今回は難しかっただけ」と言い訳しており、親は「なんでこんな点数になるのか意味がわからない」と怒り狂っているが、具体的なつまずき箇所は把握していない。",
+                trigger: "「すぐに体験授業を組んで、次のテストに向けて対策しましょう！」と勢いで進めると、数日後に親の頭が冷めた時「本人に聞いたらまだ塾はいいって言うので…」とキャンセルされる。",
+                key: "「あ、そうですよね、その点数を見るとびっくりしちゃいますよね。これって、特定のテスト結果がきっかけで『どこでこんなにつまずいちゃったんだろう』と、原因がよく分からない状態で慌てて探されている感じですか？」"
+            },
+            {
+                id: "21",
+                grade: "中2 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「あ、もしもし。資料は届いたんですけど、うちはクラブチームがかなり忙しくて、曜日とか時間が合うかどうかだけ知りたくて（事務的、防衛トーン）」",
+                status: "【スケジュール制約型】\n大手の集団塾は時間が完全に合わないため、時間の融通が利く個別指導一択で探している。",
+                control: "【顧客が条件面で主導権を握る】\n「この時間空いてますか？」のYES/NOを迫ってくる。空き状況の確約はせず、「無駄を削った効率的なコマの取り方」の相談として引き取る。",
+                honneh: "硬式野球やサッカーのクラブチームに所属。帰宅は21時近くで、土日も遠征。本人はプロを目指す勢いなので勉強は二の次だが、親としては「最低限の定期テスト対策と内申点だけは確保しておかないと、行ける高校がなくなる」と心配している。",
+                trigger: "「受験を考えるなら、週に最低でも〇コマは取っていただかないと厳しいです」と一般論を押し付けると、「じゃあ時間が無理ですね」と切られる。",
+                key: "「毎日クラブチームを頑張られているんですね。これって塾を考えるにしても、中身というよりは『そもそも通える曜日や時間が限られているから、そこが合うかどうか』が一番のハードルになっている状態ですか？」"
+            },
+            {
+                id: "22",
+                grade: "中3 / 公立",
+                difficulty: 5,
+                stars: "★★★★★",
+                tone: "「a、はい、届いてます。今も一応、別の個別塾に行ってるんですけど、成績が全然上がらなくて…（不満、諦め混じり）」",
+                status: "【他塾在籍・不信感型】\nすでに個別指導や集団塾に1〜2年通っているが、直近の模試やテストで結果が出ていない。",
+                control: "【顧客は慎重・疑り深い】\n「どこに行っても同じでは？」という不信感がある。現塾の批判はせず、「やり方（無駄の削り方）の違い」を端的に提示して信頼を勝ち取る。",
+                honneh: "塾に通わせているのに、家での勉強態度が変わらず、成績も下がっている。「高い月謝を払っているのに、塾で何をやっているのか分からない」と現塾の講師や指導環境に不満がある。ただ、中3のこの時期に塾を変えるリスクも恐れている。",
+                trigger: "「うちの個別なら、ベテラン講師が徹底的に教えるので上がります！」と根拠のない自信を見せると、「前の塾でもそう言われたんですけど…」と心を閉ざされる。",
+                key: "「別の塾さんに通われているんですね。これって『塾には真面目に行っているのに、テストの点数に全然結びついていなくて、何が原因なんだろう』というような状況でしょうか？」"
+            },
+            {
+                id: "23",
+                grade: "中2 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、はい…資料届きました。あの、うちは今、学校にちょっと行けていなくて、そういう子でも見てもらえるんでしょうか…（消え入りそうな声、非常に慎重）」",
+                status: "【特殊背景・不安MAX型】\n教室に通えるか分からないため、オンラインや家庭教師、不登校専門のサービスも視野に入れている。",
+                control: "【顧客は完全受け身・傷つきやすい】\n深い共感を示しつつ、塾側の「受け入れ態勢」を明確に提示して安心感を与える。受験のプレッシャーは一切かけない。",
+                honneh: "中1の後半から人間関係などがきっかけで不登校に。最近少し心が落ち着いてきて、本人から「勉強だけでも少し遅れを取り戻したい」とサインがあった。ただ、集団環境は無理で、大人（先生）との相性に非常に敏感になっている。",
+                trigger: "「遅れた分を取り戻すために、カリキュラムをガツガツ組んで追いつきましょう！」と学習面を急かすと、プレッシャーに潰れて「やっぱりまだ早かったです」と引かれてしまう。",
+                key: "「お問い合わせありがとうございます。もちろん大丈夫ですよ、ご安心くださいね。これって家庭内で『勉強は少し進めたいけれど、本人のペースや体調に合わせて無理なくスタートできるところを探したい』というようなお話が出たんですかね？」"
+            },
+            {
+                id: "24",
+                grade: "高1 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「もしもし、あ、料金のね。高校生って、1科目だけピンポイントで習うことってできるんですか？（少しトゲがある、防衛トーン）」",
+                status: "【料金・科目絞り込み型】\n高校生になり、予備校のセット料金の高さに驚いて「必要な科目だけ安く抑えたい」と探している。",
+                control: "【顧客がシステム面で主権を握る】\n「1科目だけでもいけるか」の確認を盾に、全体像を話したがらない。科目絞り込みの背景にある「特定の挫折」を言い当てて主導権を奪う。",
+                honneh: "高校に入ってから、特に「数学Ⅰ・A」や「英語表現」のスピードについていけず、最初のテストでクラス最下位に近い点数を取ってしまった。全体的に塾へ行く予算はないので、とにかく赤点を回避するために数学だけを安く見てもらいたい。",
+                trigger: "「高校生は大学受験を見据えて、英語と数学はセットで取らないと意味がないですよ」と一般論で枠を広げようとすると、「予算的に無理なので資料だけ見ます」とシャットアウトされる。",
+                key: "「あ、料金ですね！そちらも含めてのご案内でした。ちなみにこれって、全科目をダラダラやるというよりは、高校に入って急に難しくなった特定の科目だけを、ピンポイントで対策したいという形でしょうか？」"
+            },
+            {
+                id: "25",
+                grade: "高2 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、はい。資料届きました。今、映像授業の塾に行ってるんですけど、ちょっと合わないみたいで…（困惑、少し疲れている）」",
+                status: "【大手予備校在籍・消化不良型】\n東進や河合塾マナビスなどの映像指導大手に入塾したが、成果が出ずに他を探し始めた状態。",
+                control: "【顧客はアドバイスを求めている】\nすでに大きな費用を払ってしまっている後悔もあるため、これ以上の失敗を防ぎたいスタンス。「管理の有無」をファクトとして提示する。",
+                honneh: "高1から映像授業の塾に通い、ブースに座って画面は眺めているものの、内容が難しすぎて右から左へ聞き流している状態。アドバイザーの面談で「講座を追加しろ」と料金ばかり請求されるが、本人のわからない場所は放置されており、成績が全く上がっていない。",
+                trigger: "「映像は見るだけですからダメですよね！うちの1対1なら〜」と他社批判を強くすると、「でも私の選び方が悪かったのかも…」と親が心を閉ざしてしまう。",
+                key: "「映像授業さんに通われているんですね。これって『画面を見ている時間は長いけれど、本人が本当に理解できているのか、どこで手が止まっているのかが外から見えなくて心配』というような状態でしょうか？」"
+            },
+            {
+                id: "26",
+                grade: "高2 / 私立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、もしもし。資料の件ね。最近の大学受験って推薦とかAO（総合型）が多いって聞いたんだけど、どういう対策が必要かよく分からなくて…（不安、情報不足）」",
+                status: "【情報不足・制度変化困惑型】\n自分たちの世代（一般入試一択）との違いに戸惑い、ネットで「総合型選抜」と検索してヒットした塾を数社見ている。",
+                control: "【主導権はこちら】\n制度の仕組み自体がふわっとしているため、こちらからプロとして「今やるべきファクト」を教えてあげる。",
+                honneh: "模試の偏差値はあまり高くないが、部活や委員会、ボランティア活動などを一生懸命やっているため、推薦や総合型選抜（AO）を使えるなら使いたい。ただ、学校の先生に聞いても「一般の勉強をしなさい」と言われるだけで、具体的なポートフォリオ（活動実績）の作り方や志望理由書の書き方がわからない。",
+                trigger: "「総合型は小論文のセンスが必要ですから、今すぐ講座を取りましょう！」といきなり講座の売り込みに走ると、「あ、じゃあもう少し自分で調べてから…」と引かれてしまう。",
+                key: "「まずは情報収集ですよね。これって、一般入試でガツガツ勉強するだけじゃなくて、『本人の強みを活かした推薦や総合型を狙いたいけれど、具体的にいつから何を準備すればいいのかが分からない』という状況でしょうか？」"
+            },
+            {
+                id: "27",
+                grade: "高3 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「あ、もしもし！資料届きました。子供がやっと部活を引退したんですけど、模試の判定が最悪で…今からでも間に合いますか？（焦燥感、切迫している）」",
+                status: "【時期制限・崖っぷち型】\n夏前のこの時期、部活引退と同時に大手予備校や個別指導を駆け込みで回っている。",
+                control: "【パニックによる依存】\n藁にもすがる思い。ただし、「厳しい現実」を突きつけすぎると心が折れてしまうため、「ここからの逆算計画（無駄を削る）」を提示して主権を握る。",
+                honneh: "夏まで運動部のレギュラーとして週7日で活動。模試はずっとE判定だが、本人は部活のノリのまま「こっから現役合格を狙う！」とやる気だけはある。親は「何から手をつけていいか分からないまま夏休みに入ったら終わる」と恐怖を感じている。",
+                trigger: "「E判定ですから、今から毎日10時間以上、この講座とあの講座を両方やらないと100%落ちますよ」と無理な量を提示すると、諦めてフェードアウトする。",
+                key: "「そういった方、この時期すごく多いです。本人は部活を引退して『ここからやるぞ』と意気込んでいるけれど、受験勉強のやり方が分からず、少し空回りしているような状態ですか？」"
+            },
+            {
+                id: "28",
+                grade: "高1 / 公立",
+                difficulty: 4,
+                stars: "★★★★☆",
+                tone: "「あ、もしもし。見積もりをお願いしたくて資料請求したんですけど、高1から通うと月々いくらくらいになるんですか？（金額以外の話はシャットアウトトーン）」",
+                status: "【シャットアウト・見積もり要求型】\n他社の料金表と比較するための「数字」だけを集めている状態。",
+                control: "【顧客が金額の盾で主導権を握る】\n具体的な状況を話そうとせず、金額だけを要求する。金額への警戒を大共感で解き、最も安く済ませるための「無駄を削る作戦会議」の文脈へ引き込む。",
+                honneh: "大学には行ってほしいと思っているが、本人の志望大も決まっていないし、高校の勉強がどれくらい大変かもまだ見えていない。予備校代の費用感の相場や、いつから通い始めるのが一般的なのかを知りたい。",
+                trigger: "「お話を伺わないと料金が出せません」と頑なに拒むと、「じゃあいいです」とガチャ切りされる。",
+                key: "「あ、料金ですね！そちらも含めてのご案内でした。ちなみにこれって、まだ志望校が確定していないので、そもそも『いつから、どれくらいのペースでやるべきなのか』、そこから知りたいという形でしょうか？」"
+            },
+            {
+                id: "29",
+                grade: "高3 / 通信制・既卒",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、もしもし。資料届きました。ちょっと特殊な状況なんですけど、大学受験の相談って乗ってもらえますか？（自信なさげ、恐る恐る）」",
+                status: "【特殊背景・不安型】\n全日制の高校を中退、または通信制高校に在籍しており、集団の予備校には通えないため、個別でひっそり進めたい。",
+                control: "【顧客は完全受け身・過去の挫折あり】\n偏見のないフラットな受け入れ姿勢を提示し、現状の学力から「無駄なく最短で大学へ行くルート」を見せることで信頼を得る。",
+                honneh: "体調や人間関係で高校を中退したが、大学には行きたい。高卒認定資格を取るか、通信制の課題をこなしながら、一般入試（または総合型）で狙える大学を探している。中学レベルから英語や数学が止まっているため、基礎の基礎から戻って教えてくれる場所を探している。",
+                trigger: "「今の偏差値はいくつですか？共通テストの目標は？」といきなり受験生の標準的なファクトを詰めると、恥ずかしがって「やっぱり大丈夫です」と逃げてしまう。",
+                key: "「お問い合わせありがとうございます。もちろん大丈夫ですよ、ご安心くださいね。これって、今の学力や学校の形式に関わらず、そもそも『今の状態から、どういうスケジュールで大学受験まで進めていくのが一番確実なのか』、そのルートから一緒に整理したいという感じでしょうか？」"
+            },
+            {
+                id: "30",
+                grade: "小4 / 公立",
+                difficulty: 3,
+                stars: "★★★☆☆",
+                tone: "「あ、もしもし。資料ありがとうございました。今、海外に住んでいまして、一時帰国の期間だけ利用したいんですが…（国際電話、または日本の実家からの転送トーン、少し急いでいる）」",
+                status: "【超短期・目的特化型】\n滞在期間が「1ヶ月のみ」など決まっているため、大手塾には断られてこちらに流れ着いた。",
+                control: "【顧客が条件面で主導権を握る】\n期間と回数の要望がガチガチ。できる・できないのYES/NOに走らず、その1ヶ月で「何をどこまで引き上げるか」の中身の整理として引き取る。",
+                honneh: "現在アジアや米国の日本人学校（または現地校）に在籍。現地では日本語の「算数の文章題」や「漢字・国語の読解」を教える環境がなく、日本の同学年と比べて明らかに遅れている。夏休みなどの1ヶ月の一時帰国を利用して、プロにピンポイントで穴埋めをしてほしい。",
+                trigger: "「短期のプランは通常やっていなくて、年間契約が〜」などと既存の規約を盾に突っぱねると、その瞬間に会話が終わる。",
+                key: "「具体的に調べられているんですね。これって、長期間ダラダラ通うというよりは、『一時帰国の限られた期間だけで、日本の学校の進度に合わせた苦手な単元をピンポイントで埋めたい』という状況ですか？」"
+            }
+        ];
+
+        // 実際の動作設定
+        let cases = [];
+        let activeCase = null; // 現在モーダルで開いているケースの参照
+        let currentFilter = 'all';
+
+        // Load data from local storage or use default
+        function loadCases() {
+            const saved = localStorage.getItem('is_rp_cases');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    // defaultCasesのIDと整合性をとってマージ (コードに新ケースが追加された場合でもデータが壊れないように)
+                    const parsedMap = new Map(parsed.map(item => [item.id, item]));
+                    cases = defaultCases.map(def => {
+                        if (parsedMap.has(def.id)) {
+                            return { ...def, ...parsedMap.get(def.id) };
+                        }
+                        return def;
+                    });
+                } catch (e) {
+                    cases = JSON.parse(JSON.stringify(defaultCases));
+                }
+            } else {
+                cases = JSON.parse(JSON.stringify(defaultCases));
+            }
+        }
+
+        function getDifficultyGroup(score) {
+            if (score <= 2) return 'easy';
+            if (score <= 4) return 'mid';
+            return 'hard';
+        }
+
+        function renderGrid(filter = 'all') {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+
+            cases.forEach(c => {
+                const group = getDifficultyGroup(c.difficulty);
+                if (filter !== 'all' && filter !== group) return;
+
+                const card = document.createElement('div');
+                card.className = 'case-card';
+                card.onclick = () => showModal(c);
+                const isEditedBadge = c.edited ? '<span class="edited-badge">編集済み</span>' : '';
+                card.innerHTML = `
+                    <div>
+                        <div class="card-header">
+                            <span class="case-id">CASE ${c.id} ${isEditedBadge}</span>
+                            <span class="difficulty">${c.stars}</span>
+                        </div>
+                        <div class="case-target">${c.grade}</div>
+                        <div class="case-tone">${c.tone.substring(0, 45)}...</div>
+                        <div>
+                            <span class="meta-tag">${c.status.split('\n')[0].replace(/【|】/g, '')}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer-info">
+                        <span>詳細設定・攻略の鍵を表示 →</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterDifficulty(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            
+            const btnMap = {
+                'all': 'btn-all',
+                'easy': 'btn-easy',
+                'mid': 'btn-mid',
+                'hard': 'btn-hard'
+            };
+            const targetBtn = document.getElementById(btnMap[type]);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+            renderGrid(type);
+        }
+
+        function showModal(c) {
+            activeCase = c;
+            exitEditMode(); // 常に閲覧モードで開くようにする
+
+            document.getElementById('modalCaseId').innerText = `CASE ${c.id}`;
+            document.getElementById('modalDifficulty').innerText = c.stars;
+            document.getElementById('modalTarget').innerText = c.grade;
+            document.getElementById('modalTone').innerText = c.tone;
+            document.getElementById('modalStatus').innerText = c.status;
+            document.getElementById('modalControl').innerText = c.control;
+            document.getElementById('modalHonneh').innerText = c.honneh;
+            document.getElementById('modalTrigger').innerText = c.trigger;
+            document.getElementById('modalKey').innerText = c.key;
+
+            // 編集済みなら「初期設計に戻す」ボタンを表示
+            const btnReset = document.getElementById('btnResetCase');
+            if (btnReset) {
+                btnReset.style.display = c.edited ? 'block' : 'none';
+            }
+
+            document.getElementById('gridContainer').classList.add('blur-bg');
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function hideModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('gridContainer').classList.remove('blur-bg');
+        }
+
+        function closeModal(e) {
+            if (e.target.id === 'modalOverlay') {
+                hideModal();
+            }
+        }
+
+        function pickRandomCase() {
+            hideModal();
+            setTimeout(() => {
+                const filteredList = cases.filter(c => {
+                    if (currentFilter === 'all') return true;
+                    return getDifficultyGroup(c.difficulty) === currentFilter;
+                });
+                
+                if (filteredList.length === 0) return;
+                const randomIndex = Math.floor(Math.random() * filteredList.length);
+                showModal(filteredList[randomIndex]);
+            }, 200);
+        }
+
+        // --- 編集モード用のJSロジック ---
+        function enterEditMode() {
+            if (!activeCase) return;
+            
+            document.getElementById('modalViewMode').style.display = 'none';
+            document.getElementById('modalEditMode').style.display = 'block';
+
+            document.getElementById('editCaseId').innerText = `CASE ${activeCase.id}`;
+            document.getElementById('editDifficulty').value = activeCase.difficulty;
+            document.getElementById('editTarget').value = activeCase.grade || '';
+            document.getElementById('editTone').value = activeCase.tone || '';
+            document.getElementById('editStatus').value = activeCase.status || '';
+            document.getElementById('editControl').value = activeCase.control || '';
+            document.getElementById('editHonneh').value = activeCase.honneh || '';
+            document.getElementById('editTrigger').value = activeCase.trigger || '';
+            document.getElementById('editKey').value = activeCase.key || '';
+        }
+
+        function exitEditMode() {
+            document.getElementById('modalEditMode').style.display = 'none';
+            document.getElementById('modalViewMode').style.display = 'block';
+        }
+
+        function saveCaseChanges() {
+            if (!activeCase) return;
+
+            const newGrade = document.getElementById('editTarget').value.trim();
+            const newTone = document.getElementById('editTone').value.trim();
+            if (!newGrade || !newTone) {
+                alert('学年/属性と第一声トーンは必須項目です。');
+                return;
+            }
+
+            const diffVal = parseInt(document.getElementById('editDifficulty').value);
+            activeCase.difficulty = diffVal;
+            activeCase.stars = "★".repeat(diffVal) + "☆".repeat(5 - diffVal);
+            activeCase.grade = newGrade;
+            activeCase.tone = newTone;
+            activeCase.status = document.getElementById('editStatus').value;
+            activeCase.control = document.getElementById('editControl').value;
+            activeCase.honneh = document.getElementById('editHonneh').value;
+            activeCase.trigger = document.getElementById('editTrigger').value;
+            activeCase.key = document.getElementById('editKey').value;
+            activeCase.edited = true;
+
+            // Save to localStorage
+            localStorage.setItem('is_rp_cases', JSON.stringify(cases));
+
+            // Refresh UI
+            renderGrid(currentFilter);
+            
+            // Update view mode display
+            showModal(activeCase);
+            
+            // Back to view mode
+            exitEditMode();
+        }
+
+        function resetSingleCase() {
+            if (!activeCase) return;
+            if (!confirm('このケースの変更内容をリセットして、初期設定に戻しますか？')) return;
+
+            const def = defaultCases.find(item => item.id === activeCase.id);
+            if (def) {
+                activeCase.difficulty = def.difficulty;
+                activeCase.stars = def.stars;
+                activeCase.grade = def.grade;
+                activeCase.tone = def.tone;
+                activeCase.status = def.status;
+                activeCase.control = def.control;
+                activeCase.honneh = def.honneh;
+                activeCase.trigger = def.trigger;
+                activeCase.key = def.key;
+                activeCase.edited = false;
+
+                // Save
+                localStorage.setItem('is_rp_cases', JSON.stringify(cases));
+
+                // Refresh UI
+                renderGrid(currentFilter);
+                showModal(activeCase);
+                exitEditMode();
+            }
+        }
+
+        function resetAllCases() {
+            if (!confirm('すべての編集内容をリセットし、初期設定に戻しますか？（この操作は元に戻せません）')) return;
+
+            localStorage.removeItem('is_rp_cases');
+            loadCases();
+            renderGrid(currentFilter);
+            hideModal();
+            alert('すべての変更がリセットされました。');
+        }
+
+        // Initial Render
+        loadCases();
+        renderGrid();
+    </script>
+</body>
+</html>
