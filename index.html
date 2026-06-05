@@ -91,9 +91,9 @@
         /* Card Grid Layout */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
-            transition: all 0.4s ease;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            transition: all 0.3s ease;
         }
 
         .grid-container.blur-bg {
@@ -104,12 +104,12 @@
 
         .case-card {
             background: var(--card-bg);
-            border-radius: 18px;
-            padding: 24px;
+            border-radius: 14px;
+            padding: 14px 18px;
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-color);
             cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease, border-color 0.25s ease;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -117,15 +117,16 @@
         }
 
         .case-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
+            border-color: rgba(0, 113, 227, 0.3);
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
 
         .case-id {
@@ -146,39 +147,141 @@
         }
 
         .case-target {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
             letter-spacing: -0.01em;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
-        .case-tone {
-            font-size: 13px;
+        .case-tone-modal {
+            font-size: 14px;
             font-style: italic;
             color: #e54646;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             font-weight: 500;
+            white-space: pre-wrap; /* 改行などの空白文字を保持 */
+            line-height: 1.6;
+            background: #fff5f5;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(229, 70, 70, 0.25);
+            border-left: 4px solid #e54646;
         }
 
         .meta-tag {
             display: inline-block;
             font-size: 11px;
             background: #f2f2f7;
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 6px;
             margin-right: 6px;
-            margin-bottom: 12px;
+            margin-bottom: 4px;
             color: #48484a;
         }
 
         .card-footer-info {
             border-top: 1px solid var(--border-color);
-            padding-top: 12px;
-            margin-top: 12px;
+            padding-top: 8px;
+            margin-top: 8px;
             font-size: 12px;
             color: var(--text-sub);
             display: flex;
             justify-content: space-between;
+        }
+
+        /* List Layout representation (縦一列・横長表示) for wide screen */
+        .grid-container.list-layout {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-container.list-layout .case-card {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 18px;
+            }
+
+            .grid-container.list-layout .case-card > div:first-child {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                flex-grow: 1;
+                margin-right: 16px;
+                overflow: hidden;
+            }
+
+            .grid-container.list-layout .card-header {
+                margin-bottom: 0;
+                width: 130px;
+                flex-shrink: 0;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2px;
+            }
+
+            .grid-container.list-layout .case-target {
+                margin-bottom: 0;
+                width: 120px;
+                flex-shrink: 0;
+                font-size: 15px;
+            }
+
+            .grid-container.list-layout .meta-tag {
+                margin-bottom: 0;
+                white-space: nowrap;
+            }
+
+            .grid-container.list-layout .card-footer-info {
+                border-top: none;
+                padding-top: 0;
+                margin-top: 0;
+                flex-shrink: 0;
+                font-size: 11px;
+                width: auto;
+            }
+        }
+
+        /* Segmented control for switching layouts */
+        .segmented-control {
+            display: flex;
+            background: #e3e3e9;
+            padding: 2px;
+            border-radius: 9px;
+            align-items: center;
+        }
+
+        .segment-btn {
+            border: none;
+            background: transparent;
+            padding: 5px 14px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .segment-btn.active {
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            font-weight: 600;
+        }
+
+        .control-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         /* Modal View (Popup) */
@@ -443,11 +546,24 @@
             <button class="btn-random-large" onclick="pickRandomCase()"> シナリオをランダム選出</button>
         </div>
 
-        <div class="filter-wrapper">
-            <button class="filter-btn active" id="btn-all" onclick="filterDifficulty('all')">すべて</button>
-            <button class="filter-btn" id="btn-easy" onclick="filterDifficulty('easy')">★1〜2 (初級)</button>
-            <button class="filter-btn" id="btn-mid" onclick="filterDifficulty('mid')">★3〜4 (中級)</button>
-            <button class="filter-btn" id="btn-hard" onclick="filterDifficulty('hard')">★5 (上級)</button>
+        <div class="control-bar">
+            <div class="filter-wrapper">
+                <button class="filter-btn active" id="btn-all" onclick="filterDifficulty('all')">すべて</button>
+                <button class="filter-btn" id="btn-easy" onclick="filterDifficulty('easy')">★1〜2 (初級)</button>
+                <button class="filter-btn" id="btn-mid" onclick="filterDifficulty('mid')">★3〜4 (中級)</button>
+                <button class="filter-btn" id="btn-hard" onclick="filterDifficulty('hard')">★5 (上級)</button>
+            </div>
+
+            <div class="segmented-control">
+                <button class="segment-btn active" id="btn-layout-grid" onclick="changeLayout('grid')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <span>グリッド表示</span>
+                </button>
+                <button class="segment-btn" id="btn-layout-list" onclick="changeLayout('list')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px;"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    <span>リスト表示 (縦一列)</span>
+                </button>
+            </div>
         </div>
 
         <div class="grid-container" id="gridContainer">
@@ -464,8 +580,9 @@
                     <span class="case-id" id="modalCaseId">CASE 01</span>
                     <span class="difficulty" id="modalDifficulty">★★★★★</span>
                 </div>
-                <h2 class="case-target" id="modalTarget">学年 / 属性</h2>
-                <div class="case-tone" id="modalTone">お電話口の第一声トーン</div>
+                <h2 class="case-target" id="modalTarget" style="margin-bottom: 12px;">学年 / 属性</h2>
+                <div class="section-title" style="color: #e54646; border-left-color: #e54646; margin-top: 10px;">お電話口の第一声トーン（話出し）</div>
+                <div class="case-tone-modal" id="modalTone">お電話口の第一声トーン</div>
                 
                 <div class="section-title">顧客ステータス / 他社接触</div>
                 <div class="section-content" id="modalStatus"></div>
@@ -966,13 +1083,12 @@
                             <span class="difficulty">${c.stars}</span>
                         </div>
                         <div class="case-target">${c.grade}</div>
-                        <div class="case-tone">${c.tone.substring(0, 45)}...</div>
                         <div>
                             <span class="meta-tag">${c.status.split('\n')[0].replace(/【|】/g, '')}</span>
                         </div>
                     </div>
                     <div class="card-footer-info">
-                        <span>詳細設定・攻略の鍵を表示 →</span>
+                        <span>詳細設定を表示 →</span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -1140,8 +1256,42 @@
             alert('すべての変更がリセットされました。');
         }
 
+        // --- レイアウト切り替え機能 (Grid vs List/縦並び) ---
+        let currentLayout = 'grid';
+
+        function loadLayout() {
+            const savedLayout = localStorage.getItem('is_rp_layout');
+            if (savedLayout && (savedLayout === 'grid' || savedLayout === 'list')) {
+                currentLayout = savedLayout;
+            }
+            applyLayout(currentLayout);
+        }
+
+        function changeLayout(type) {
+            currentLayout = type;
+            localStorage.setItem('is_rp_layout', type);
+            applyLayout(type);
+        }
+
+        function applyLayout(type) {
+            const container = document.getElementById('gridContainer');
+            const btnGrid = document.getElementById('btn-layout-grid');
+            const btnList = document.getElementById('btn-layout-list');
+
+            if (type === 'list') {
+                container.classList.add('list-layout');
+                if (btnList) btnList.classList.add('active');
+                if (btnGrid) btnGrid.classList.remove('active');
+            } else {
+                container.classList.remove('list-layout');
+                if (btnGrid) btnGrid.classList.add('active');
+                if (btnList) btnList.classList.remove('active');
+            }
+        }
+
         // Initial Render
         loadCases();
+        loadLayout();
         renderGrid();
     </script>
 </body>
